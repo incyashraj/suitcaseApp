@@ -52,6 +52,36 @@ export const Reader: React.FC<ReaderProps> = ({ book, onClose, onReward, onUpdat
     setNumPages(numPages);
   }
 
+  // Text selection handler
+  const handleTextSelection = () => {
+    const selection = window.getSelection();
+    if (selection && selection.toString().trim()) {
+      const range = selection.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      const pdfContainer = document.querySelector('.react-pdf__Document');
+      if (pdfContainer) {
+        const containerRect = pdfContainer.getBoundingClientRect();
+        setSelection({
+          text: selection.toString(),
+          top: rect.top - containerRect.top,
+          left: rect.left - containerRect.left
+        });
+      }
+    } else {
+      setSelection(null);
+    }
+  };
+
+  // Listen for text selection changes
+  useEffect(() => {
+    const handleSelectionChange = () => {
+      handleTextSelection();
+    };
+
+    document.addEventListener('selectionchange', handleSelectionChange);
+    return () => document.removeEventListener('selectionchange', handleSelectionChange);
+  }, []);
+
   // Sync highlights/notes to backend
   useEffect(() => {
     onUpdateBookData(book.id, {
@@ -357,7 +387,7 @@ export const Reader: React.FC<ReaderProps> = ({ book, onClose, onReward, onUpdat
                  >
                    <Page 
                      pageNumber={pageNumber} 
-                     renderTextLayer={false}
+                     renderTextLayer={true}
                      renderAnnotationLayer={false}
                      className="shadow-lg"
                    />

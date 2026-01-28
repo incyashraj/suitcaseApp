@@ -47,6 +47,11 @@ export const Reader: React.FC<ReaderProps> = ({ book, onClose, onReward, onUpdat
   // PDF State
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
+  const pdfRef = useRef<HTMLDivElement>(null);
+
+  function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
+    setNumPages(numPages);
+  }
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
     setNumPages(numPages);
@@ -56,16 +61,20 @@ export const Reader: React.FC<ReaderProps> = ({ book, onClose, onReward, onUpdat
   const handleTextSelection = () => {
     const selection = window.getSelection();
     if (selection && selection.toString().trim()) {
+      // Check if selection is within PDF
       const range = selection.getRangeAt(0);
-      const rect = range.getBoundingClientRect();
-      const pdfContainer = document.querySelector('.react-pdf__Document');
-      if (pdfContainer) {
-        const containerRect = pdfContainer.getBoundingClientRect();
-        setSelection({
-          text: selection.toString(),
-          top: rect.top - containerRect.top,
-          left: rect.left - containerRect.left
-        });
+      const commonAncestor = range.commonAncestorContainer;
+      const pdfElement = pdfRef.current?.querySelector('.react-pdf__Page');
+      if (pdfElement && pdfElement.contains(commonAncestor as Node)) {
+        const rect = range.getBoundingClientRect();
+        if (pdfRef.current) {
+          const containerRect = pdfRef.current.getBoundingClientRect();
+          setSelection({
+            text: selection.toString(),
+            top: rect.top - containerRect.top + pdfRef.current.scrollTop,
+            left: rect.left - containerRect.left
+          });
+        }
       }
     } else {
       setSelection(null);
@@ -380,6 +389,7 @@ export const Reader: React.FC<ReaderProps> = ({ book, onClose, onReward, onUpdat
             ) : book.isLocal && book.fileUrl ? (
                <div className="w-full h-full rounded-2xl shadow-sm overflow-auto">
                  <Document
+                   ref={pdfRef}
                    file={book.fileUrl}
                    onLoadSuccess={onDocumentLoadSuccess}
                    loading={<div className="flex items-center justify-center h-full"><Loader2 className="animate-spin" size={24} /></div>}
@@ -389,6 +399,7 @@ export const Reader: React.FC<ReaderProps> = ({ book, onClose, onReward, onUpdat
                      pageNumber={pageNumber} 
                      renderTextLayer={true}
                      renderAnnotationLayer={false}
+                     onMouseUp={handleTextSelection}
                      className="shadow-lg"
                    />
                  </Document>

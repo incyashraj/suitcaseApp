@@ -146,7 +146,10 @@ export const explainContext = async (text: string, bookTitle: string): Promise<s
 
 export const generateBookContent = async (title: string, author: string, chapter: number = 1): Promise<string> => {
     try {
-        const system = `Write the detailed story content for Chapter ${chapter} of "${title}" by ${author}. Use HTML format <p>. Focus on storytelling, dialogue, and detail.`;
+        const system = `Write the detailed narrative for Chapter ${chapter} of "${title}" by ${author}. 
+        PUBLIC DOMAIN: Provide VERBATIM text. 
+        COPYRIGHTED: Provide a detailed 2000-word adaptation. 
+        Use HTML <p>. Do not trim content.`;
         const text = await callLLM(system, "Write the full chapter content.");
         return text || "<p>Content generation failed.</p>";
     } catch (e) {

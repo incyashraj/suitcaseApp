@@ -28,6 +28,7 @@ export const Reader: React.FC<ReaderProps> = ({ book, onClose, onReward, onUpdat
   const [highlights, setHighlights] = useState<Highlight[]>(book.userHighlights || []);
   const [notes, setNotes] = useState<Note[]>(book.userNotes || []);
   const [activeSidebar, setActiveSidebar] = useState<'chat' | 'notes' | null>(null);
+  const [selectedText, setSelectedText] = useState<string>('');
   
   // Note Input State
   const [showNoteInput, setShowNoteInput] = useState(false);
@@ -69,8 +70,10 @@ export const Reader: React.FC<ReaderProps> = ({ book, onClose, onReward, onUpdat
         const rect = range.getBoundingClientRect();
         if (pdfRef.current) {
           const containerRect = pdfRef.current.getBoundingClientRect();
+          const text = selection.toString();
+          setSelectedText(text);
           setSelection({
-            text: selection.toString(),
+            text: text,
             top: rect.top - containerRect.top + pdfRef.current.scrollTop,
             left: rect.left - containerRect.left
           });
@@ -78,6 +81,7 @@ export const Reader: React.FC<ReaderProps> = ({ book, onClose, onReward, onUpdat
       }
     } else {
       setSelection(null);
+      setSelectedText('');
     }
   };
 
@@ -208,11 +212,11 @@ export const Reader: React.FC<ReaderProps> = ({ book, onClose, onReward, onUpdat
   // Tools Logic
   const addHighlight = (color: string) => {
     if (selection) {
-      const newHighlight = { id: Date.now().toString(), text: selection.text, color };
+      const newHighlight = { id: Date.now().toString(), text: selectedText, color };
       setHighlights(prev => [...prev, newHighlight]);
       
       // Immediate DOM update
-      setContent(prev => prev.replace(selection.text, `<mark style="background-color: ${color}; color: black; border-radius: 2px; padding: 2px 0;">${selection.text}</mark>`));
+      setContent(prev => prev.replace(selectedText, `<mark style="background-color: ${color}; color: black; border-radius: 2px; padding: 2px 0;">${selectedText}</mark>`));
       
       setSelection(null);
       if (window.getSelection) { window.getSelection()?.removeAllRanges(); }
@@ -222,7 +226,7 @@ export const Reader: React.FC<ReaderProps> = ({ book, onClose, onReward, onUpdat
   const handleTranslate = async () => {
     if (!selection) return;
     setContextPopup({ text: "Translating...", type: 'translation' });
-    const textToTranslate = selection.text;
+    const textToTranslate = selectedText;
     setSelection(null); 
     const res = await translateText(textToTranslate);
     setContextPopup({ text: res, type: 'translation' });
@@ -231,7 +235,7 @@ export const Reader: React.FC<ReaderProps> = ({ book, onClose, onReward, onUpdat
   const handleExplain = async () => {
     if (!selection) return;
     setContextPopup({ text: "Analyzing context...", type: 'explanation' });
-    const textToExplain = selection.text;
+    const textToExplain = selectedText;
     setSelection(null);
     const res = await explainContext(textToExplain, book.title);
     setContextPopup({ text: res, type: 'explanation' });
@@ -239,7 +243,7 @@ export const Reader: React.FC<ReaderProps> = ({ book, onClose, onReward, onUpdat
 
   const handleGoogleSearch = () => {
     if (!selection) return;
-    window.open(`https://www.google.com/search?q=${encodeURIComponent(selection.text)}`, '_blank');
+    window.open(`https://www.google.com/search?q=${encodeURIComponent(selectedText)}`, '_blank');
     setSelection(null);
   };
   
@@ -252,7 +256,7 @@ export const Reader: React.FC<ReaderProps> = ({ book, onClose, onReward, onUpdat
           const newNote: Note = {
               id: Date.now().toString(),
               text: noteInput,
-              selectedText: selection.text,
+              selectedText: selectedText,
               createdAt: Date.now()
           };
           setNotes(prev => [...prev, newNote]);
@@ -458,7 +462,7 @@ export const Reader: React.FC<ReaderProps> = ({ book, onClose, onReward, onUpdat
             )}
 
             {/* Selection Context Menu - Tooltip */}
-            {selection && !showNoteInput && (
+            {selectedText && !showNoteInput && (
                <div 
                  className="fixed z-50 bg-gray-900/90 backdrop-blur-xl text-white rounded-xl shadow-2xl flex items-center gap-1 p-1 animate-in zoom-in-95 duration-200"
                  style={{ top: selection.top - 60, left: selection.left - 180 }}
@@ -487,7 +491,7 @@ export const Reader: React.FC<ReaderProps> = ({ book, onClose, onReward, onUpdat
             )}
 
             {/* Note Input Popover */}
-            {showNoteInput && selection && (
+            {showNoteInput && selectedText && (
                 <div 
                   className="fixed z-50 bg-white rounded-2xl shadow-2xl p-4 w-72 animate-in zoom-in-95 duration-200 border border-gray-100"
                   style={{ top: selection.top - 120, left: selection.left - 144 }}

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Suitcase - Your Literary Companion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=New+York:wght@400;500;600;700&family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      /* Fallback fonts if SF Pro/New York aren't available locally */
+      @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
+      :root {
+        /* Bouncier spring for playful UI */
+        --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+        --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
+        background-color: #F5F5F7; /* Apple light gray background */
+        color: #1D1D1F;
+        -webkit-font-smoothing: antialiased;
+      }
+      
+      h1, h2, h3, .serif {
+        font-family: "New York", "Playfair Display", serif;
+      }
+
+      /* Premium Animations */
+      .animate-spring {
+        transition: transform 0.6s var(--ease-spring), opacity 0.6s ease;
+      }
+      
+      .hover-lift {
+        transition: transform 0.4s var(--ease-spring), box-shadow 0.4s var(--ease-spring);
+      }
+      .hover-lift:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08);
+      }
+      
+      /* New Float Animation for Empty States */
+      @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+      }
+      .animate-float {
+        animation: float 6s ease-in-out infinite;
+      }
+
+      /* Glass Utilities */
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.65);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+      }
+
+      /* Dock Specific */
+      .dock-icon-transition {
+        transition: all 0.4s var(--ease-spring);
+      }
+
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 0px;
+        background: transparent;
+      }
+      
+      /* Text Selection Color */
+      ::selection {
+        background: #bfdbfe; /* blue-200 */
+        color: #1e3a8a; /* blue-900 */
+      }
+      
+      /* Tooltip Animation Container */
+      .tooltip-container:hover::after {
+          /* Add playful tooltips later if needed */
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "firebase/": "https://esm.sh/firebase@^12.8.0/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.38.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

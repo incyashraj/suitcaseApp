@@ -327,12 +327,14 @@ export const generateBookContent = async (
         const response = await callGroq([
             {
                 role: "system",
-                content: `Generate a compelling preview for Chapter ${chapter} of "${title}" by ${author}. 
-Use HTML formatting with <h3> for chapter title and <p> for paragraphs.
-Create engaging, literary content that captures the book's style. About 3-4 paragraphs.`
+                content: `Write the FULL, DETAILED content for Chapter ${chapter} of "${title}" by ${author}. 
+Do NOT write a summary or preview. Write the actual story content as if reading the book.
+Include rich dialogue, descriptive scenes, and deep character introspection.
+Aim for approximately 1500-2000 words. Capture the author's exact writing style.
+Use HTML formatting: <h3> for chapter title, <p> for paragraphs, <em> for thoughts.`
             },
-            { role: "user", content: `Generate Chapter ${chapter} preview` }
-        ], false, 1024);
+            { role: "user", content: `Write full Chapter ${chapter}` }
+        ], false, 4096);
 
         return response || Fallback.generateBookContent(title, author, chapter);
     } catch (error) {

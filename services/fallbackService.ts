@@ -21,7 +21,7 @@ const callLLM = async (systemPrompt: string, userPrompt: string) => {
         },
         body: JSON.stringify({
             inputs: `<s>[INST] ${systemPrompt} \n\n ${userPrompt} [/INST]`,
-            parameters: { max_new_tokens: 1024, temperature: 0.7, return_full_text: false }
+            parameters: { max_new_tokens: 2500, temperature: 0.8, return_full_text: false }
         }),
     });
 
@@ -146,8 +146,8 @@ export const explainContext = async (text: string, bookTitle: string): Promise<s
 
 export const generateBookContent = async (title: string, author: string, chapter: number = 1): Promise<string> => {
     try {
-        const system = `Write Chapter ${chapter} of "${title}" by ${author}. HTML format <p>.`;
-        const text = await callLLM(system, "Generate chapter content.");
+        const system = `Write the detailed story content for Chapter ${chapter} of "${title}" by ${author}. Use HTML format <p>. Focus on storytelling, dialogue, and detail.`;
+        const text = await callLLM(system, "Write the full chapter content.");
         return text || "<p>Content generation failed.</p>";
     } catch (e) {
         return `

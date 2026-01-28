@@ -461,8 +461,8 @@ export const generateBookContent = async (title: string, author: string, chapter
           Instructions:
           1. Write the FULL text for **Chapter ${chapter}**. 
           2. If it is a public domain book, provide the exact text.
-          3. If it is copyrighted, write a very detailed, high-fidelity narrative adaptation that covers all events, dialogue, and descriptions of the chapter so the user can read it like a real book.
-          4. Length: Write at least 800-1200 words. Do not be brief.
+          3. If it is copyrighted, write a very detailed, high-fidelity narrative adaptation that includes all dialogue, scene descriptions, and inner monologues.
+          4. Length: CRITICAL - Write at least 1500-2000 words. The user wants to read for a long time.
           5. Formatting: Use clean HTML. Use <h3> for the Chapter Title. Use <p> for paragraphs.
           
           Do NOT use markdown code blocks. Just return the HTML string.

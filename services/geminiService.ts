@@ -4,7 +4,7 @@ import * as Fallback from "./fallbackService";
 
 // Initialize Gemini Client
 const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
-const modelName = 'gemini-2.0-flash-exp';
+const modelName = 'gemini-2.5-flash';
 
 // Helper to safely parse JSON from AI response if the SDK doesn't return an object directly
 const parseJSON = (text: string | undefined) => {

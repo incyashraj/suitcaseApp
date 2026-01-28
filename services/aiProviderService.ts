@@ -18,13 +18,7 @@ import { Book, Review, UserPreferences } from "../types";
 
 // Detect which AI provider is available
 const getProvider = () => {
-    const groqKey = import.meta.env.VITE_GROQ_API_KEY;
-    console.log("DEBUG PROVIDER CHECK:", {
-        groqKeyPrefix: groqKey ? groqKey.substring(0, 5) : "undefined",
-        groqKeyLen: groqKey ? groqKey.length : 0
-    });
-
-    if (groqKey && groqKey.length > 10) return "groq";
+    if (import.meta.env.VITE_GROQ_API_KEY) return "groq";
     if (import.meta.env.VITE_GEMINI_API_KEY) return "gemini";
     return "fallback";
 };

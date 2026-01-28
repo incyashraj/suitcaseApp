@@ -302,7 +302,7 @@ export default function App() {
   // --- RENDER ---
 
   if (!isDataLoaded && view !== 'auth') return (
-    <div className="min-h-screen flex items-center justify-center bg-[#fdf6e3]">
+    <div className="min-h-screen flex items-center justify-center bg-[#F5F5F7]">
       <Loader2 className="animate-spin text-gray-400" />
     </div>
   );
@@ -320,18 +320,18 @@ export default function App() {
     return (
       <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#F5F5F7] animate-in fade-in duration-500">
         <div className="relative">
-          <div className="absolute inset-0 bg-blue-100 rounded-full blur-xl animate-pulse"></div>
-          <BookOpen size={64} className="relative text-blue-600 mb-6 animate-bounce" />
+          <div className="absolute inset-0 bg-blue-500/10 rounded-full blur-xl animate-pulse"></div>
+          <BookOpen size={64} className="relative text-[#0066CC] mb-6 animate-bounce" />
         </div>
-        <h2 className="text-2xl font-serif font-bold text-gray-900 mb-2">Curating your Suitcase...</h2>
-        <p className="text-gray-500">Finding books that match your vibe.</p>
+        <h2 className="text-2xl font-bold text-[#1d1d1f] mb-2 tracking-tight">Curating your library...</h2>
+        <p className="text-[#86868b] text-lg">Finding books that match your taste.</p>
       </div>
     );
   }
 
   return (
     <div
-      className="min-h-screen flex flex-col bg-[#fdf6e3] selection:bg-[#2aa19840] overflow-x-hidden relative"
+      className="min-h-screen flex flex-col bg-[#F5F5F7] selection:bg-[#B3D7FF] selection:text-black overflow-x-hidden relative"
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -339,34 +339,30 @@ export default function App() {
 
       {/* Drag Overlay */}
       {isDragging && (
-        <div className="fixed inset-0 z-[100] bg-[#2aa19820] backdrop-blur-sm border-4 border-[#2aa198] border-dashed m-4 rounded-[3rem] flex items-center justify-center pointer-events-none animate-in fade-in duration-200">
-          <div className="bg-[#fdf6e3] p-8 rounded-3xl shadow-2xl flex flex-col items-center border border-[#eee8d5]">
-            <Upload size={48} className="text-[#2aa198] mb-4 animate-bounce" />
-            <h2 className="text-2xl font-bold text-[#073642]">Drop PDF to Upload</h2>
+        <div className="fixed inset-0 z-[100] bg-white/60 backdrop-blur-md border-4 border-[#0066CC] border-dashed m-4 rounded-[32px] flex items-center justify-center pointer-events-none animate-in fade-in duration-200">
+          <div className="bg-white p-12 rounded-[24px] shadow-2xl flex flex-col items-center border border-gray-100">
+            <Upload size={48} className="text-[#0066CC] mb-6 animate-bounce" />
+            <h2 className="text-3xl font-bold text-[#1d1d1f] tracking-tight">Drop PDF to Upload</h2>
           </div>
         </div>
       )}
 
-      {/* Top Bar */}
+      {/* Top Bar - Sticky Frosted Glass */}
       <div className="fixed top-0 left-0 right-0 z-30 px-6 py-4 flex justify-between items-center pointer-events-none">
-        <div className="flex items-center gap-2 opacity-70">
-          <Briefcase size={20} className="text-[#073642]" />
-          <span className="font-serif font-bold text-xl tracking-tight text-[#073642] hidden sm:block">Suitcase</span>
+        <div className="flex items-center gap-3">
+          <Briefcase size={22} className="text-[#1d1d1f]" />
+          <span className="font-bold text-xl tracking-tight text-[#1d1d1f] hidden sm:block">Suitcase</span>
         </div>
 
         <div className="pointer-events-auto flex items-center gap-3">
-          <button onClick={handleLogout} className="bg-[#fdf6e3]/80 backdrop-blur-md p-2 rounded-full shadow-sm border border-[#eee8d5] text-[#657b83] hover:text-[#dc322f] transition-colors">
-            <LogOut size={16} />
-          </button>
-
           <div
             onClick={() => { setActiveMode('library'); setView('profile'); }}
-            className="bg-[#fdf6e3]/80 backdrop-blur-md px-4 py-2 rounded-full shadow-sm border border-[#eee8d5] flex items-center gap-2 hover:scale-105 transition-transform cursor-pointer"
+            className="bg-white/70 backdrop-blur-xl px-4 py-2 rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-white/50 flex items-center gap-2 hover:scale-105 transition-transform cursor-pointer"
           >
-            <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#b58900] to-[#cb4b16] flex items-center justify-center shadow-sm">
+            <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#FFD60A] to-[#FF9F0A] flex items-center justify-center shadow-sm">
               <span className="text-[10px] font-bold text-white">$</span>
             </div>
-            <span className="text-sm font-bold text-[#073642]">{wallet.balance}</span>
+            <span className="text-sm font-medium text-[#1d1d1f]">{wallet.balance}</span>
           </div>
         </div>
       </div>
@@ -603,10 +599,10 @@ export default function App() {
 
       </main>
 
-      {/* Floating Glass Dock */}
+      {/* Floating Glass Dock - iOS Style */}
       {view !== 'reader' && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 animate-in slide-in-from-bottom-24 duration-1000 ease-out">
-          <div className="glass-panel flex items-center gap-2 p-2 px-4 rounded-full shadow-[0_25px_60px_-15px_rgba(0,43,54,0.12)] ring-1 ring-[#eee8d5] bg-[#fdf6e3]/90 backdrop-blur-xl">
+          <div className="flex items-center gap-2 p-2 px-4 rounded-[24px] shadow-[0_12px_40px_rgba(0,0,0,0.12)] bg-white/70 backdrop-blur-xl border border-white/40 ring-1 ring-black/5">
             <DockItem icon={Home} label="Library" isActive={view === 'library' && activeMode === 'library'} onClick={() => { setView('library'); setActiveMode('library'); }} />
             <DockItem icon={Sparkles} label="Concierge" isActive={view === 'library' && activeMode === 'mood'} onClick={() => { setView('library'); setActiveMode('mood'); }} />
             <DockItem icon={Search} label="Search" isActive={view === 'library' && activeMode === 'search'} onClick={() => { setView('library'); setActiveMode('search'); }} />

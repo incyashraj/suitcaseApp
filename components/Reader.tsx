@@ -442,14 +442,14 @@ export const Reader: React.FC<ReaderProps> = ({ book, onClose, onReward, onUpdat
   }
 
   return (
-    <div className="flex h-screen bg-[#F5F5F7] text-gray-900 animate-in fade-in duration-300 overflow-hidden font-serif">
+    <div className="flex h-screen bg-[#F5F5F7] text-[#1d1d1f] animate-in fade-in duration-300 overflow-hidden font-sans">
 
       {/* 1. Main Content Area */}
       <div className={`flex-1 flex flex-col relative transition-all duration-500 ${activeSidebar ? 'mr-96' : ''}`}>
 
-        {/* Top Bar */}
-        <div className="h-16 flex items-center justify-between px-6 bg-white/80 backdrop-blur-md border-b border-gray-200 z-20">
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+        {/* Top Bar - Minimal & Transparent */}
+        <div className="h-16 flex items-center justify-between px-6 bg-white/70 backdrop-blur-xl border-b border-[#d2d2d7]/50 z-20">
+          <button onClick={onClose} className="p-2 hover:bg-black/5 rounded-full transition-colors text-[#1d1d1f]">
             <ArrowLeft size={20} />
           </button>
           <div className="text-center">
@@ -651,10 +651,10 @@ export const Reader: React.FC<ReaderProps> = ({ book, onClose, onReward, onUpdat
             </div>
           )}
 
-          {/* Selection Context Menu - Tooltip */}
+          {/* Selection Context Menu - iOS Style Tooltip */}
           {selection && selectedText && !showNoteInput && (
             <div
-              className="selection-toolbar fixed z-[100] bg-gray-900 text-white rounded-2xl shadow-2xl flex items-center gap-1 p-2 animate-in zoom-in-95 duration-200 border border-gray-700"
+              className="selection-toolbar fixed z-[100] bg-[#1d1d1f] text-white rounded-[14px] shadow-[0_8px_40px_rgba(0,0,0,0.24)] flex items-center gap-1 p-1.5 animate-in zoom-in-95 duration-200 font-sans"
               style={{
                 top: Math.max(10, selection.top),
                 left: Math.max(10, Math.min(window.innerWidth - 400, selection.left - 180)),
@@ -727,69 +727,69 @@ export const Reader: React.FC<ReaderProps> = ({ book, onClose, onReward, onUpdat
             </div>
           )}
 
-          {/* Context Popup (Explanation/Translation) */}
+          {/* Context Popup (Explanation/Translation) - Clean Card */}
           {contextPopup && (
             <div
               style={{ top: contextPopup.top, left: contextPopup.left }}
-              className="fixed z-[100] bg-[#fdf6e3] text-[#073642] rounded-xl shadow-2xl p-6 w-80 animate-in zoom-in-95 border border-[#eee8d5]"
+              className="fixed z-[100] bg-white text-[#1d1d1f] rounded-[18px] shadow-[0_20px_40px_rgba(0,0,0,0.12)] p-6 w-80 animate-in zoom-in-95 border border-[#d2d2d7]/50 ring-1 ring-black/5"
             >
-              <div className="flex justify-between items-start mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#b58900]">
-                  {contextPopup.type === 'translation' ? 'Translation' : 'Context & Analysis'}
+              <div className="flex justify-between items-start mb-3">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#0066CC]">
+                  {contextPopup.type === 'translation' ? 'Translation' : 'Context'}
                 </span>
                 <button onClick={() => setContextPopup(null)}>
-                  <X size={16} className="text-[#93a1a1] hover:text-[#dc322f]" />
+                  <X size={16} className="text-[#86868b] hover:text-[#1d1d1f]" />
                 </button>
               </div>
-              <p className="text-[#586e75] leading-relaxed font-serif text-lg">{contextPopup.text}</p>
+              <p className="text-[#1d1d1f] leading-relaxed font-serif text-lg">{contextPopup.text}</p>
             </div>
           )}
         </div>
 
-        {/* Bottom Dynamic Toolbar */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-xl border border-white shadow-2xl rounded-full px-4 py-3 flex items-center gap-4 z-30 hover:scale-105 transition-transform">
+        {/* Bottom Dynamic Toolbar - Frosted Glass Pill */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-white/70 backdrop-blur-xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.12)] rounded-full px-5 py-3 flex items-center gap-5 z-30 transition-transform">
           {/* Table of Contents */}
           {!book.isLocal && (
             <>
               <button
                 onClick={() => setShowTOC(!showTOC)}
-                className={`flex items-center gap-2 text-sm font-bold ${showTOC ? 'text-blue-600' : 'text-gray-600'} hover:text-gray-900`}
+                className={`flex items-center gap-2 text-sm font-medium ${showTOC ? 'text-[#0066CC]' : 'text-[#86868b]'} hover:text-[#1d1d1f] transition-colors`}
                 title="Table of Contents"
               >
                 <List size={18} />
                 <span className="hidden sm:inline">Contents</span>
               </button>
-              <div className="w-px h-6 bg-gray-300"></div>
+              <div className="w-px h-5 bg-[#d2d2d7]"></div>
               <button
                 onClick={() => setShowAINav(!showAINav)}
-                className={`flex items-center gap-2 text-sm font-bold ${showAINav ? 'text-purple-600' : 'text-gray-600'} hover:text-gray-900`}
-                title="AI Go-To: Jump to any part of the book"
+                className={`flex items-center gap-2 text-sm font-medium ${showAINav ? 'text-[#0066CC]' : 'text-[#86868b]'} hover:text-[#1d1d1f] transition-colors`}
+                title="AI Go-To"
               >
                 <Navigation size={18} />
                 <span className="hidden sm:inline">Go To...</span>
               </button>
-              <div className="w-px h-6 bg-gray-300"></div>
+              <div className="w-px h-5 bg-[#d2d2d7]"></div>
             </>
           )}
           <button
             onClick={() => setActiveSidebar(activeSidebar === 'chat' ? null : 'chat')}
-            className={`flex items-center gap-2 text-sm font-bold ${activeSidebar === 'chat' ? 'text-blue-600' : 'text-gray-600'}`}
+            className={`flex items-center gap-2 text-sm font-medium ${activeSidebar === 'chat' ? 'text-[#0066CC]' : 'text-[#86868b]'} hover:text-[#1d1d1f] transition-colors`}
           >
             <MessageSquare size={18} />
             <span className="hidden sm:inline">Companion</span>
           </button>
-          <div className="w-px h-6 bg-gray-300"></div>
+          <div className="w-px h-5 bg-[#d2d2d7]"></div>
           <button
             onClick={() => setActiveSidebar(activeSidebar === 'notes' ? null : 'notes')}
-            className={`flex items-center gap-2 text-sm font-bold ${activeSidebar === 'notes' ? 'text-blue-600' : 'text-gray-600'}`}
+            className={`flex items-center gap-2 text-sm font-medium ${activeSidebar === 'notes' ? 'text-[#0066CC]' : 'text-[#86868b]'} hover:text-[#1d1d1f] transition-colors`}
           >
             <PenTool size={18} />
             <span className="hidden sm:inline">Notes</span> ({notes.length})
           </button>
-          <div className="w-px h-6 bg-gray-300"></div>
+          <div className="w-px h-5 bg-[#d2d2d7]"></div>
           <button
             onClick={handleFinishBook}
-            className="flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-gray-900"
+            className="flex items-center gap-2 text-sm font-medium text-[#86868b] hover:text-[#1d1d1f]"
           >
             <CheckCircle size={18} />
             <span className="hidden sm:inline">Finish</span>
@@ -827,39 +827,39 @@ export const Reader: React.FC<ReaderProps> = ({ book, onClose, onReward, onUpdat
           </div>
         )}
 
-        {/* AI Navigation Modal */}
+        {/* AI Navigation Modal - iOS Style */}
         {showAINav && !book.isLocal && (
-          <div className="fixed inset-0 bg-[#002b36]/40 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in">
-            <div className="bg-[#fdf6e3] rounded-3xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden animate-in zoom-in-95 border border-[#eee8d5]">
-              <div className="p-6 border-b border-[#eee8d5] bg-[#fdf6e3]">
+          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in">
+            <div className="bg-white rounded-[24px] shadow-[0_40px_80px_rgba(0,0,0,0.12)] w-full max-w-lg mx-4 overflow-hidden animate-in zoom-in-95 scale-100 ring-1 ring-black/5">
+              <div className="p-6 border-b border-[#F5F5F7] bg-white sticky top-0">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-bold text-[#b58900] flex items-center gap-2 font-serif">
-                    <Navigation size={24} className="text-[#2aa198]" /> AI Go-To
+                  <h3 className="text-xl font-bold text-[#1d1d1f] flex items-center gap-2 tracking-tight">
+                    <Navigation size={22} className="text-[#0066CC]" /> AI Go-To
                   </h3>
-                  <button onClick={() => { setShowAINav(false); setAINavResult(null); setAINavInput(''); }}>
-                    <X size={24} className="text-[#93a1a1] hover:text-[#dc322f] transition-colors" />
+                  <button onClick={() => { setShowAINav(false); setAINavResult(null); setAINavInput(''); }} className="bg-[#F5F5F7] p-2 rounded-full hover:bg-[#E5E5EA] transition-colors">
+                    <X size={18} className="text-[#86868b]" />
                   </button>
                 </div>
-                <p className="text-[#586e75] text-sm mt-2">
-                  Tell me where you want to go in the book...
+                <p className="text-[#86868b] text-[15px] mt-2">
+                  Describe a scene, quote, or moment to jump there.
                 </p>
               </div>
 
-              <div className="p-6">
-                <div className="flex gap-2">
+              <div className="p-6 bg-[#F5F5F7]/50">
+                <div className="flex gap-3">
                   <input
                     type="text"
                     value={aiNavInput}
                     onChange={(e) => setAINavInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleAINavigation()}
-                    placeholder='e.g., "where the hero meets the villain"'
-                    className="flex-1 px-4 py-3 rounded-xl border border-[#93a1a1] bg-white focus:outline-none focus:ring-2 focus:ring-[#2aa198] text-[#073642] placeholder-[#93a1a1]"
+                    placeholder='e.g., "where they find the treasure"'
+                    className="flex-1 px-4 py-3 rounded-xl border border-[#d2d2d7] bg-white focus:outline-none focus:border-[#0066CC] focus:ring-4 focus:ring-[#0066CC]/10 text-[#1d1d1f] placeholder-[#86868b] shadow-sm transition-all"
                     autoFocus
                   />
                   <button
                     onClick={handleAINavigation}
                     disabled={aiNavLoading || !aiNavInput.trim()}
-                    className="px-6 py-3 bg-[#2aa198] text-[#fdf6e3] rounded-xl font-bold hover:bg-[#268bd2] disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                    className="px-6 py-3 bg-[#0066CC] text-white rounded-xl font-medium hover:bg-[#004499] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
                   >
                     {aiNavLoading ? <Loader2 size={20} className="animate-spin" /> : 'Find'}
                   </button>
@@ -867,27 +867,27 @@ export const Reader: React.FC<ReaderProps> = ({ book, onClose, onReward, onUpdat
 
                 {/* AI Result */}
                 {aiNavResult && (
-                  <div className="mt-6 p-4 bg-[#eee8d5]/50 rounded-xl border border-[#eee8d5]">
-                    <p className="text-sm text-[#2aa198] font-medium mb-2 uppercase tracking-wider">Found Section</p>
-                    <p className="text-[#586e75] mb-4 font-serif italic">{aiNavResult.description}</p>
+                  <div className="mt-6 p-5 bg-white rounded-2xl border border-[#d2d2d7]/50 shadow-sm animate-in slide-in-from-bottom-2">
+                    <p className="text-xs text-[#0066CC] font-bold mb-2 uppercase tracking-wide">Result Found</p>
+                    <p className="text-[#1d1d1f] mb-5 font-serif text-lg leading-relaxed">{aiNavResult.description}</p>
                     <button
                       onClick={goToAIChapter}
-                      className="w-full py-3 bg-[#b58900] text-white rounded-xl font-bold hover:bg-[#073642] transition-colors flex items-center justify-center gap-2 shadow-sm"
+                      className="w-full py-3.5 bg-[#F5F5F7] text-[#0066CC] rounded-xl font-semibold hover:bg-[#E5E5EA] transition-colors flex items-center justify-center gap-2 group"
                     >
-                      Go to Chapter {aiNavResult.chapter} <ChevronRight size={18} />
+                      Jump to Chapter {aiNavResult.chapter} <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
                     </button>
                   </div>
                 )}
 
                 {/* Quick Suggestions */}
-                <div className="mt-6">
-                  <p className="text-xs text-[#93a1a1] uppercase tracking-wider mb-2">Quick jumps</p>
+                <div className="mt-8">
+                  <p className="text-xs text-[#86868b] font-semibold uppercase tracking-wider mb-3">Suggestions</p>
                   <div className="flex flex-wrap gap-2">
-                    {['the beginning', 'the climax', 'the ending', 'where it gets exciting'].map((suggestion) => (
+                    {['the beginning', 'the climax', 'the ending', 'a plot twist'].map((suggestion) => (
                       <button
                         key={suggestion}
                         onClick={() => { setAINavInput(suggestion); }}
-                        className="px-3 py-1.5 bg-[#eee8d5] text-[#586e75] rounded-full text-sm hover:bg-[#2aa198] hover:text-white transition-colors"
+                        className="px-3 py-1.5 bg-white border border-[#d2d2d7] text-[#1d1d1f] rounded-full text-sm font-medium hover:border-[#0066CC] hover:text-[#0066CC] transition-colors shadow-sm"
                       >
                         {suggestion}
                       </button>

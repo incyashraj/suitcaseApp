@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Loader2, Maximize2, Minimize2, Highlighter, MessageSquare, Globe, Search, BookOpen, PenTool, CheckCircle, Gift, Send, X, StickyNote, FileText, RefreshCw, Sparkles, ChevronRight, ChevronLeft, Eye, Book as BookIcon } from 'lucide-react';
+import { Document, Page, pdfjs } from 'react-pdf';
 import { Book, Note, Highlight } from '../types';
 import { chatAboutBook, translateText, explainContext, generateBookContent, getBookSummary, getBookRecap } from '../services/geminiService';
+
+// Configure PDF.js worker
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 interface ReaderProps {
   book: Book;
@@ -35,10 +39,13 @@ export const Reader: React.FC<ReaderProps> = ({ book, onClose, onReward, onUpdat
   const [isProcessing, setIsProcessing] = useState(false);
   const [contextPopup, setContextPopup] = useState<{text: string, type: 'translation' | 'explanation'} | null>(null);
 
-  // Finishing Flow
-  const [showFinishModal, setShowFinishModal] = useState(false);
-  const [authorNote, setAuthorNote] = useState('');
-  const [showReward, setShowReward] = useState(false);
+  // PDF State
+  const [numPages, setNumPages] = useState<number | null>(null);
+  const [pageNumber, setPageNumber] = useState(1);
+
+  function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
+    setNumPages(numPages);
+  }
 
   // Sync highlights/notes to backend
   useEffect(() => {
@@ -336,7 +343,42 @@ export const Reader: React.FC<ReaderProps> = ({ book, onClose, onReward, onUpdat
                    </p>
                 </div>
             ) : book.isLocal && book.fileUrl ? (
-               <iframe src={book.fileUrl} className="w-full h-full rounded-2xl shadow-sm" title="PDF" />
+               <div className="w-full h-full rounded-2xl shadow-sm overflow-auto">
+                 <Document
+                   file={book.fileUrl}
+                   onLoadSuccess={onDocumentLoadSuccess}
+                   loading={<div className="flex items-center justify-center h-full"><Loader2 className="animate-spin" size={24} /></div>}
+                   error={<div className="flex items-center justify-center h-full text-red-500">Failed to load PDF</div>}
+                 >
+                   <Page 
+                     pageNumber={pageNumber} 
+                     renderTextLayer={false}
+                     renderAnnotationLayer={false}
+                     className="shadow-lg"
+                   />
+                 </Document>
+                 {numPages && (
+                   <div className="flex items-center justify-center gap-4 mt-4 p-4 bg-white rounded-lg shadow-sm">
+                     <button 
+                       onClick={() => setPageNumber(Math.max(1, pageNumber - 1))}
+                       disabled={pageNumber <= 1}
+                       className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50"
+                     >
+                       <ChevronLeft size={20} />
+                     </button>
+                     <span className="text-sm font-medium">
+                       Page {pageNumber} of {numPages}
+                     </span>
+                     <button 
+                       onClick={() => setPageNumber(Math.min(numPages, pageNumber + 1))}
+                       disabled={pageNumber >= numPages}
+                       className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50"
+                     >
+                       <ChevronRight size={20} />
+                     </button>
+                   </div>
+                 )}
+               </div>
             ) : (
                <div className="max-w-2xl mx-auto bg-white p-12 shadow-sm rounded-[2px] min-h-full leading-loose text-lg text-gray-800 selection:bg-blue-100 selection:text-blue-900 pb-32">
                   <div dangerouslySetInnerHTML={{ __html: content }} />

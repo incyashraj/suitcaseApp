@@ -36,12 +36,33 @@ export interface Book {
   matchReason?: string; // Why it matches the user's mood
   content?: string; // Mock text content for reader interactivity
   currentChapter?: number; // Track which chapter the user is on
-  
+  lastPage?: number; // Last page read for PDFs
+  lastScrollPosition?: number; // Last scroll position for generated content
+
+  // Open Library Integration
+  source?: 'local' | 'openLibrary' | 'gutenberg' | 'gemini' | 'groq';
+  openLibraryId?: string; // Open Library work key
+  coverImageUrl?: string; // Real cover image from Open Library
+  hasFullText?: boolean; // Whether full text is available
+  internetArchiveIds?: string[]; // Internet Archive identifiers for reading
+  averageRating?: number; // Community rating (1-5)
+  ratingsCount?: number; // Number of ratings
+
+  // Reading Statistics
+  readingStats?: {
+    pagesRead: number;
+    totalPages: number;
+    timeSpentMs: number;
+    startedAt: number;
+    lastSessionAt: number;
+  };
+
   // User Data specific to this book
   userNotes?: Note[];
   userHighlights?: Highlight[];
   isFinished?: boolean;
   lastReadDate?: number;
+  authorNote?: string; // Note written to author after finishing
 }
 
 export interface User {

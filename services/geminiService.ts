@@ -1,6 +1,7 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { Book, Review, UserPreferences } from "../types";
 import * as Fallback from "./fallbackService";
+import { searchOpenLibrary, getBookDetails } from "./openLibraryService";
 
 // Initialize Gemini Client
 const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
@@ -8,28 +9,98 @@ const modelName = 'gemini-2.5-flash';
 
 // Helper to safely parse JSON from AI response if the SDK doesn't return an object directly
 const parseJSON = (text: string | undefined) => {
-    if (!text) return [];
+  if (!text) return [];
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    // Fallback for markdown code blocks
+    const clean = text.replace(/```json\n?|```/g, '').trim();
     try {
-        return JSON.parse(text);
-    } catch (e) {
-        // Fallback for markdown code blocks
-        const clean = text.replace(/```json\n?|```/g, '').trim();
-        try {
-            return JSON.parse(clean);
-        } catch (e2) {
-            console.error("Failed to parse Gemini JSON", e2);
-            return [];
-        }
+      return JSON.parse(clean);
+    } catch (e2) {
+      console.error("Failed to parse Gemini JSON", e2);
+      return [];
     }
+  }
 };
 
 /**
- * Searches for books using Gemini.
- * Acts as an interface to a "Global Library" by hallucinating accurate metadata for real books.
+ * Hybrid book search: Combines Open Library (real books) with Gemini (enrichment).
+ * This allows users to search for ANY book in existence.
  */
 export const searchBooks = async (query: string): Promise<Book[]> => {
+  try {
+    // Step 1: Search Open Library for real books
+    const openLibraryResults = await searchOpenLibrary(query, 12);
+
+    // If we got results from Open Library, enrich them with Gemini descriptions
+    if (openLibraryResults.length > 0) {
+      // Enrich books missing descriptions using Gemini
+      const enrichedBooks = await enrichBooksWithGemini(openLibraryResults);
+      return enrichedBooks;
+    }
+
+    // Step 2: Fallback to pure Gemini search if Open Library returns nothing
+    return await searchBooksWithGemini(query);
+  } catch (error) {
+    console.error("Hybrid search error:", error);
+    return Fallback.searchBooks(query);
+  }
+};
+
+/**
+ * Enrich Open Library results with Gemini-generated descriptions
+ */
+const enrichBooksWithGemini = async (books: Book[]): Promise<Book[]> => {
+  if (!import.meta.env.VITE_GEMINI_API_KEY) return books;
+
+  // Only enrich books missing descriptions
+  const booksNeedingEnrichment = books.filter(b => !b.description);
+
+  if (booksNeedingEnrichment.length === 0) return books;
+
+  try {
+    const bookTitles = booksNeedingEnrichment.slice(0, 6).map(b => `"${b.title}" by ${b.author}`).join(", ");
+
+    const response = await ai.models.generateContent({
+      model: modelName,
+      contents: `For each of these books: ${bookTitles}
+        
+        Return a JSON array with objects containing:
+        - title (exact match)
+        - description (compelling 2-sentence hook for each book)
+        
+        Only return the JSON array, no other text.`,
+      config: {
+        responseMimeType: "application/json",
+      },
+    });
+
+    const descriptions = parseJSON(response.text);
+
+    // Merge descriptions back into books
+    return books.map(book => {
+      if (book.description) return book;
+      const enrichment = descriptions.find((d: any) =>
+        d.title?.toLowerCase() === book.title.toLowerCase()
+      );
+      return {
+        ...book,
+        description: enrichment?.description || `A fascinating read by ${book.author}.`,
+        source: 'openLibrary' as const,
+      };
+    });
+  } catch (error) {
+    console.error("Enrichment error:", error);
+    return books;
+  }
+};
+
+/**
+ * Pure Gemini search fallback for obscure queries
+ */
+const searchBooksWithGemini = async (query: string): Promise<Book[]> => {
   if (!import.meta.env.VITE_GEMINI_API_KEY) {
-    console.warn("Gemini API Key missing, using fallback.");
     return Fallback.searchBooks(query);
   }
 
@@ -41,7 +112,7 @@ export const searchBooks = async (query: string): Promise<Book[]> => {
         author: { type: Type.STRING },
         description: { type: Type.STRING },
         publishedYear: { type: Type.STRING },
-        categories: { 
+        categories: {
           type: Type.ARRAY,
           items: { type: Type.STRING }
         },
@@ -80,7 +151,7 @@ export const searchBooks = async (query: string): Promise<Book[]> => {
     });
 
     const data = parseJSON(response.text);
-    
+
     return data.map((item: any, index: number) => ({
       id: `gemini-search-${Date.now()}-${index}`,
       title: item.title,
@@ -91,7 +162,8 @@ export const searchBooks = async (query: string): Promise<Book[]> => {
       isLocal: false,
       publishedYear: item.publishedYear,
       categories: item.categories || [],
-      fileUrl: undefined // Indicates this is a "Cloud" book
+      source: 'gemini' as const,
+      fileUrl: undefined
     }));
 
   } catch (error) {
@@ -104,39 +176,39 @@ export const searchBooks = async (query: string): Promise<Book[]> => {
  * Conversational Concierge
  * Handles back-and-forth dialogue to recommend books.
  */
-export const consultConcierge = async (userMessage: string, history: {role: 'user'|'model', text: string}[]): Promise<{ reply: string, suggestions: Book[] }> => {
-    if (!import.meta.env.VITE_GEMINI_API_KEY) return Fallback.consultConcierge(userMessage, history);
+export const consultConcierge = async (userMessage: string, history: { role: 'user' | 'model', text: string }[]): Promise<{ reply: string, suggestions: Book[] }> => {
+  if (!import.meta.env.VITE_GEMINI_API_KEY) return Fallback.consultConcierge(userMessage, history);
 
-    try {
-        const bookSchema: Schema = {
-            type: Type.OBJECT,
-            properties: {
-              title: { type: Type.STRING },
-              author: { type: Type.STRING },
-              description: { type: Type.STRING },
-              publishedYear: { type: Type.STRING },
-              categories: { type: Type.ARRAY, items: { type: Type.STRING } },
-              coverColor: { type: Type.STRING },
-              isbn: { type: Type.STRING, description: "Valid ISBN-13." },
-              matchReason: { type: Type.STRING, description: "Why this recommendation fits the conversation." }
-            },
-            required: ["title", "author", "description", "publishedYear", "categories", "coverColor", "isbn", "matchReason"],
-        };
+  try {
+    const bookSchema: Schema = {
+      type: Type.OBJECT,
+      properties: {
+        title: { type: Type.STRING },
+        author: { type: Type.STRING },
+        description: { type: Type.STRING },
+        publishedYear: { type: Type.STRING },
+        categories: { type: Type.ARRAY, items: { type: Type.STRING } },
+        coverColor: { type: Type.STRING },
+        isbn: { type: Type.STRING, description: "Valid ISBN-13." },
+        matchReason: { type: Type.STRING, description: "Why this recommendation fits the conversation." }
+      },
+      required: ["title", "author", "description", "publishedYear", "categories", "coverColor", "isbn", "matchReason"],
+    };
 
-        const responseSchema: Schema = {
-            type: Type.OBJECT,
-            properties: {
-                reply: { type: Type.STRING, description: "Your conversational response to the user." },
-                suggestions: { 
-                    type: Type.ARRAY, 
-                    items: bookSchema,
-                    description: "List of 1-3 books if relevant to the user's request. Can be empty if the user is just chatting."
-                }
-            },
-            required: ["reply", "suggestions"]
-        };
+    const responseSchema: Schema = {
+      type: Type.OBJECT,
+      properties: {
+        reply: { type: Type.STRING, description: "Your conversational response to the user." },
+        suggestions: {
+          type: Type.ARRAY,
+          items: bookSchema,
+          description: "List of 1-3 books if relevant to the user's request. Can be empty if the user is just chatting."
+        }
+      },
+      required: ["reply", "suggestions"]
+    };
 
-        const prompt = `
+    const prompt = `
             You are a sophisticated, warm, and highly knowledgeable literary concierge named "Suitcase".
             Your goal is to have a natural conversation with the user to help them find the perfect book.
             
@@ -152,40 +224,40 @@ export const consultConcierge = async (userMessage: string, history: {role: 'use
             4. 'matchReason' should be a personalized sentence about why you picked this book for them.
         `;
 
-        const response = await ai.models.generateContent({
-            model: modelName,
-            contents: prompt,
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: responseSchema,
-            },
-        });
+    const response = await ai.models.generateContent({
+      model: modelName,
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: responseSchema,
+      },
+    });
 
-        const data = parseJSON(response.text);
-        
-        const suggestions = (data.suggestions || []).map((item: any, index: number) => ({
-            id: `concierge-${Date.now()}-${index}`,
-            title: item.title,
-            author: item.author,
-            coverColor: item.coverColor || '#E2E8F0',
-            isbn: item.isbn,
-            description: item.description,
-            isLocal: false,
-            publishedYear: item.publishedYear,
-            categories: item.categories || [],
-            matchReason: item.matchReason,
-            fileUrl: undefined
-        }));
+    const data = parseJSON(response.text);
 
-        return {
-            reply: data.reply || "I'm pondering that thought...",
-            suggestions: suggestions
-        };
+    const suggestions = (data.suggestions || []).map((item: any, index: number) => ({
+      id: `concierge-${Date.now()}-${index}`,
+      title: item.title,
+      author: item.author,
+      coverColor: item.coverColor || '#E2E8F0',
+      isbn: item.isbn,
+      description: item.description,
+      isLocal: false,
+      publishedYear: item.publishedYear,
+      categories: item.categories || [],
+      matchReason: item.matchReason,
+      fileUrl: undefined
+    }));
 
-    } catch (e) {
-        console.warn("Concierge Error, using fallback", e);
-        return Fallback.consultConcierge(userMessage, history);
-    }
+    return {
+      reply: data.reply || "I'm pondering that thought...",
+      suggestions: suggestions
+    };
+
+  } catch (e) {
+    console.warn("Concierge Error, using fallback", e);
+    return Fallback.consultConcierge(userMessage, history);
+  }
 }
 
 /**
@@ -200,30 +272,30 @@ export const getMoodRecommendations = async (mood: string): Promise<Book[]> => {
  * Generates recommendations based on onboarding preferences.
  */
 export const getOnboardingRecommendations = async (prefs: UserPreferences): Promise<Book[]> => {
-    if (!import.meta.env.VITE_GEMINI_API_KEY) return Fallback.getOnboardingRecommendations(prefs);
-  
-    try {
-      const bookSchema: Schema = {
-        type: Type.OBJECT,
-        properties: {
-          title: { type: Type.STRING },
-          author: { type: Type.STRING },
-          description: { type: Type.STRING },
-          publishedYear: { type: Type.STRING },
-          categories: { type: Type.ARRAY, items: { type: Type.STRING } },
-          coverColor: { type: Type.STRING },
-          isbn: { type: Type.STRING, description: "Valid ISBN-13 (preferred) or ISBN-10." },
-          matchReason: { type: Type.STRING, description: "Why this fits the user's preferences." }
-        },
-        required: ["title", "author", "description", "publishedYear", "categories", "coverColor", "isbn", "matchReason"],
-      };
-  
-      const responseSchema: Schema = {
-        type: Type.ARRAY,
-        items: bookSchema,
-      };
-  
-      const prompt = `
+  if (!import.meta.env.VITE_GEMINI_API_KEY) return Fallback.getOnboardingRecommendations(prefs);
+
+  try {
+    const bookSchema: Schema = {
+      type: Type.OBJECT,
+      properties: {
+        title: { type: Type.STRING },
+        author: { type: Type.STRING },
+        description: { type: Type.STRING },
+        publishedYear: { type: Type.STRING },
+        categories: { type: Type.ARRAY, items: { type: Type.STRING } },
+        coverColor: { type: Type.STRING },
+        isbn: { type: Type.STRING, description: "Valid ISBN-13 (preferred) or ISBN-10." },
+        matchReason: { type: Type.STRING, description: "Why this fits the user's preferences." }
+      },
+      required: ["title", "author", "description", "publishedYear", "categories", "coverColor", "isbn", "matchReason"],
+    };
+
+    const responseSchema: Schema = {
+      type: Type.ARRAY,
+      items: bookSchema,
+    };
+
+    const prompt = `
         The user loves these genres: ${prefs.genres.join(', ')}.
         Their reading goal is: ${prefs.readingGoal}.
         
@@ -231,37 +303,37 @@ export const getOnboardingRecommendations = async (prefs: UserPreferences): Prom
         Use soft, elegant colors for coverColor as fallback.
         CRITICAL: Provide a valid 'isbn' for each book for cover lookup.
       `;
-  
-      const response = await ai.models.generateContent({
-        model: modelName,
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: responseSchema,
-        },
-      });
-  
-      const data = parseJSON(response.text);
-  
-      return data.map((item: any, index: number) => ({
-        id: `gemini-onboarding-${Date.now()}-${index}`,
-        title: item.title,
-        author: item.author,
-        coverColor: item.coverColor || '#E2E8F0',
-        isbn: item.isbn,
-        description: item.description,
-        isLocal: false,
-        publishedYear: item.publishedYear,
-        categories: item.categories || [],
-        matchReason: item.matchReason,
-        fileUrl: undefined
-      }));
-  
-    } catch (error) {
-      console.warn("Gemini Onboarding Error, using fallback:", error);
-      return Fallback.getOnboardingRecommendations(prefs);
-    }
-  };
+
+    const response = await ai.models.generateContent({
+      model: modelName,
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: responseSchema,
+      },
+    });
+
+    const data = parseJSON(response.text);
+
+    return data.map((item: any, index: number) => ({
+      id: `gemini-onboarding-${Date.now()}-${index}`,
+      title: item.title,
+      author: item.author,
+      coverColor: item.coverColor || '#E2E8F0',
+      isbn: item.isbn,
+      description: item.description,
+      isLocal: false,
+      publishedYear: item.publishedYear,
+      categories: item.categories || [],
+      matchReason: item.matchReason,
+      fileUrl: undefined
+    }));
+
+  } catch (error) {
+    console.warn("Gemini Onboarding Error, using fallback:", error);
+    return Fallback.getOnboardingRecommendations(prefs);
+  }
+};
 
 /**
  * Generates mock reviews to simulate Goodreads integration.
@@ -324,9 +396,9 @@ export const generateReviews = async (title: string, author: string): Promise<Re
  * Chat about a book
  */
 export const chatAboutBook = async (bookTitle: string, userMessage: string, chatHistory: any[]): Promise<string> => {
-     if (!import.meta.env.VITE_GEMINI_API_KEY) return Fallback.chatAboutBook(bookTitle, userMessage, chatHistory);
-     try {
-        const prompt = `
+  if (!import.meta.env.VITE_GEMINI_API_KEY) return Fallback.chatAboutBook(bookTitle, userMessage, chatHistory);
+  try {
+    const prompt = `
             You are an expert literary scholar and reading companion.
             Context: The user is currently reading "${bookTitle}".
             
@@ -337,43 +409,43 @@ export const chatAboutBook = async (bookTitle: string, userMessage: string, chat
             
             Answer concisely but deeply. If they ask about plot, be careful with spoilers unless asked.
         `;
-        const response = await ai.models.generateContent({
-            model: modelName,
-            contents: prompt,
-        });
-        return response.text || "I couldn't generate a response.";
-     } catch (e) {
-         return Fallback.chatAboutBook(bookTitle, userMessage, chatHistory);
-     }
+    const response = await ai.models.generateContent({
+      model: modelName,
+      contents: prompt,
+    });
+    return response.text || "I couldn't generate a response.";
+  } catch (e) {
+    return Fallback.chatAboutBook(bookTitle, userMessage, chatHistory);
+  }
 };
 
 /**
  * Reader Tool: Translate
  */
 export const translateText = async (text: string, targetLang: string = "English"): Promise<string> => {
-    if (!import.meta.env.VITE_GEMINI_API_KEY) return Fallback.translateText(text);
-    try {
-        const prompt = `Translate the following literary text to ${targetLang}. Preserve the tone and style: "${text}"`;
-        const response = await ai.models.generateContent({ model: modelName, contents: prompt });
-        return response.text || "Translation failed.";
-    } catch (e) {
-        return Fallback.translateText(text);
-    }
+  if (!import.meta.env.VITE_GEMINI_API_KEY) return Fallback.translateText(text);
+  try {
+    const prompt = `Translate the following literary text to ${targetLang}. Preserve the tone and style: "${text}"`;
+    const response = await ai.models.generateContent({ model: modelName, contents: prompt });
+    return response.text || "Translation failed.";
+  } catch (e) {
+    return Fallback.translateText(text);
+  }
 }
 
 /**
  * Reader Tool: Explain Context
  */
 export const explainContext = async (text: string, bookTitle: string): Promise<string> => {
-    if (!import.meta.env.VITE_GEMINI_API_KEY) return Fallback.explainContext(text, bookTitle);
-    try {
-        const prompt = `The user is reading "${bookTitle}" and highlighted this text: "${text}".
+  if (!import.meta.env.VITE_GEMINI_API_KEY) return Fallback.explainContext(text, bookTitle);
+  try {
+    const prompt = `The user is reading "${bookTitle}" and highlighted this text: "${text}".
         Explain this excerpt in simple terms. Provide necessary context, historical background, or define archaic words.`;
-        const response = await ai.models.generateContent({ model: modelName, contents: prompt });
-        return response.text || "Could not explain context.";
-    } catch (e) {
-        return Fallback.explainContext(text, bookTitle);
-    }
+    const response = await ai.models.generateContent({ model: modelName, contents: prompt });
+    return response.text || "Could not explain context.";
+  } catch (e) {
+    return Fallback.explainContext(text, bookTitle);
+  }
 }
 
 /**
@@ -381,9 +453,9 @@ export const explainContext = async (text: string, bookTitle: string): Promise<s
  * Generates specific chapters to allow reading the 'complete' book in segments.
  */
 export const generateBookContent = async (title: string, author: string, chapter: number = 1): Promise<string> => {
-    if (!import.meta.env.VITE_GEMINI_API_KEY) return Fallback.generateBookContent(title, author, chapter);
-    try {
-        const prompt = `
+  if (!import.meta.env.VITE_GEMINI_API_KEY) return Fallback.generateBookContent(title, author, chapter);
+  try {
+    const prompt = `
           The user wants to read **Chapter ${chapter}** of the book "${title}" by ${author}.
           
           Instructions:
@@ -395,42 +467,42 @@ export const generateBookContent = async (title: string, author: string, chapter
           
           Do NOT use markdown code blocks. Just return the HTML string.
         `;
-        const response = await ai.models.generateContent({ model: modelName, contents: prompt });
-        
-        // Cleanup markdown if present
-        let text = response.text || "<p>Content unavailable.</p>";
-        text = text.replace(/```html|```/g, '').trim();
-        
-        return text;
-    } catch (e) {
-        return Fallback.generateBookContent(title, author, chapter);
-    }
+    const response = await ai.models.generateContent({ model: modelName, contents: prompt });
+
+    // Cleanup markdown if present
+    let text = response.text || "<p>Content unavailable.</p>";
+    text = text.replace(/```html|```/g, '').trim();
+
+    return text;
+  } catch (e) {
+    return Fallback.generateBookContent(title, author, chapter);
+  }
 }
 
 /**
  * Reader Tool: Summary
  */
 export const getBookSummary = async (title: string): Promise<string> => {
-    if (!import.meta.env.VITE_GEMINI_API_KEY) return Fallback.getBookSummary(title);
-    try {
-        const prompt = `Provide a comprehensive summary of the book "${title}". Cover the main plot points, themes, and character arcs.`;
-        const response = await ai.models.generateContent({ model: modelName, contents: prompt });
-        return response.text || "Summary unavailable.";
-    } catch (e) {
-        return Fallback.getBookSummary(title);
-    }
+  if (!import.meta.env.VITE_GEMINI_API_KEY) return Fallback.getBookSummary(title);
+  try {
+    const prompt = `Provide a comprehensive summary of the book "${title}". Cover the main plot points, themes, and character arcs.`;
+    const response = await ai.models.generateContent({ model: modelName, contents: prompt });
+    return response.text || "Summary unavailable.";
+  } catch (e) {
+    return Fallback.getBookSummary(title);
+  }
 }
 
 /**
  * Reader Tool: Recap
  */
 export const getBookRecap = async (title: string): Promise<string> => {
-    if (!import.meta.env.VITE_GEMINI_API_KEY) return Fallback.getBookRecap(title);
-    try {
-        const prompt = `The user is reading "${title}" and has forgotten what happened previously. Provide a quick recap of the beginning/setup of the book to jog their memory.`;
-        const response = await ai.models.generateContent({ model: modelName, contents: prompt });
-        return response.text || "Recap unavailable.";
-    } catch (e) {
-        return Fallback.getBookRecap(title);
-    }
+  if (!import.meta.env.VITE_GEMINI_API_KEY) return Fallback.getBookRecap(title);
+  try {
+    const prompt = `The user is reading "${title}" and has forgotten what happened previously. Provide a quick recap of the beginning/setup of the book to jog their memory.`;
+    const response = await ai.models.generateContent({ model: modelName, contents: prompt });
+    return response.text || "Recap unavailable.";
+  } catch (e) {
+    return Fallback.getBookRecap(title);
+  }
 }

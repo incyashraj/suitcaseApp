@@ -7,7 +7,7 @@ import { Book, Review, UserPreferences } from "../types";
  */
 
 const HF_API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3";
-const API_KEY = process.env.HF_TOKEN; // Expects a Hugging Face Token
+const API_KEY = import.meta.env.VITE_HF_TOKEN; // Expects a Hugging Face Token (optional)
 
 // Helper to call Hugging Face
 const callLLM = async (systemPrompt: string, userPrompt: string) => {
@@ -48,7 +48,7 @@ export const searchBooks = async (query: string): Promise<Book[]> => {
         const text = await callLLM(system, `Search for: ${query}`);
         const json = extractJSON(text);
         if (json && Array.isArray(json)) return json.map((b: any, i) => ({
-            ...b, 
+            ...b,
             id: `fallback-${Date.now()}-${i}`,
             categories: b.categories || ["General"],
             isLocal: false
@@ -77,11 +77,11 @@ export const consultConcierge = async (userMessage: string, history: any[]): Pro
         const system = "You are a helpful book concierge named Suitcase (Backup Mode). Reply kindly. If asked for books, provide a JSON object with 'reply' (string) and 'suggestions' (array of books with title, author, isbn).";
         const text = await callLLM(system, userMessage);
         const json = extractJSON(text);
-        
+
         if (json && json.reply) {
             return {
                 reply: json.reply,
-                suggestions: Array.isArray(json.suggestions) ? json.suggestions.map((s:any, i:number) => ({
+                suggestions: Array.isArray(json.suggestions) ? json.suggestions.map((s: any, i: number) => ({
                     ...s,
                     id: `fb-con-${i}`,
                     coverColor: '#cbd5e1',

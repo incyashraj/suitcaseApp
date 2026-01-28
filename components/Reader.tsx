@@ -39,6 +39,11 @@ export const Reader: React.FC<ReaderProps> = ({ book, onClose, onReward, onUpdat
   const [isProcessing, setIsProcessing] = useState(false);
   const [contextPopup, setContextPopup] = useState<{text: string, type: 'translation' | 'explanation'} | null>(null);
 
+  // Finishing Flow
+  const [showFinishModal, setShowFinishModal] = useState(false);
+  const [authorNote, setAuthorNote] = useState('');
+  const [showReward, setShowReward] = useState(false);
+
   // PDF State
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);

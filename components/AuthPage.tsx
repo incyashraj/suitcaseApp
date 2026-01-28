@@ -116,6 +116,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
                    onChange={e => setEmail(e.target.value)}
                    className="w-full bg-gray-50 border-2 border-transparent focus:bg-white focus:border-black rounded-2xl px-5 py-4 text-gray-900 font-medium outline-none transition-all"
                    placeholder="reader@example.com"
+                   autoComplete="email"
                  />
                </div>
 

@@ -14,208 +14,155 @@
 @import 'react-pdf/dist/Page/TextLayer.css';
 
 /* ===========================================
-   APPLE DESIGN SYSTEM - Minimal & Premium
+   APPLE DESIGN SYSTEM - Refined (Pro)
    =========================================== */
 
-/* Apple Color Palette */
 :root {
   /* System Colors */
   --apple-bg: #F5F5F7;
-  /* Main background */
   --apple-card: #FFFFFF;
-  /* Card background */
   --apple-text: #1d1d1f;
-  /* Primary text (Almost black) */
-  --apple-text-gray: #86868b;
-  /* Secondary text */
-  --apple-blue: #0066CC;
-  /* Action color */
-  --apple-blue-hover: #004499;
-  --apple-border: #d2d2d7;
-  /* Subtle borders */
+  --apple-text-secondary: #86868b;
+  --apple-blue: #0071e3;
+  /* Brighter Apple Blue */
+  --apple-blue-hover: #0077ED;
+  --apple-border: rgba(0, 0, 0, 0.08);
+  /* Lighter border */
 
-  /* Glassmorphism */
-  --apple-glass: rgba(255, 255, 255, 0.72);
-  --apple-glass-border: rgba(255, 255, 255, 0.5);
+  /* Glassmorphism - More translucent */
+  --apple-glass: rgba(255, 255, 255, 0.85);
+  --apple-glass-border: rgba(255, 255, 255, 0.4);
 
-  /* Typography - San Francisco */
-  --font-apple: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* Typography - SF Pro logic */
+  --font-apple: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
-  /* Shadows - Extremely subtle, diffuse */
-  --shadow-apple-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-  --shadow-apple-md: 0 8px 24px rgba(0, 0, 0, 0.08);
-  --shadow-apple-lg: 0 20px 40px rgba(0, 0, 0, 0.12);
+  /* Shadows - Layered & Diffuse (Key for Apple feel) */
+  --shadow-apple-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-apple-card: 0 4px 12px rgba(0, 0, 0, 0.06), 0 12px 24px rgba(0, 0, 0, 0.04);
+  --shadow-apple-float: 0 20px 40px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05);
 
-  /* Spacing */
-  --radius-xs: 8px;
-  --radius-sm: 12px;
-  --radius-md: 18px;
-  --radius-lg: 28px;
-  --radius-full: 9999px;
+  /* Sizing - Reduced Scale */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  /* Classic iOS card radius */
+  --radius-xl: 22px;
 
-  /* Animation */
-  --ease-apple: cubic-bezier(0.25, 0.1, 0.25, 1.0);
+  --ease-spring: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-/* Base Styles */
 body {
   font-family: var(--font-apple);
   background-color: var(--apple-bg);
   color: var(--apple-text);
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  line-height: 1.47059;
-  font-weight: 400;
-  letter-spacing: -0.022em;
+  line-height: 1.5;
+  font-size: 14px;
+  /* Reduced base size */
 }
 
-/* Typography Scale */
+/* Precise Typography Scale */
 h1 {
-  font-weight: 700;
-  font-size: 56px;
-  line-height: 1.07143;
-  letter-spacing: -0.005em;
+  font-weight: 600;
+  font-size: 32px;
+  /* Reduced from 56 */
+  letter-spacing: -0.02em;
   color: #1d1d1f;
+  line-height: 1.1;
 }
 
 h2 {
   font-weight: 600;
-  font-size: 40px;
-  line-height: 1.1;
-  letter-spacing: 0em;
+  font-size: 24px;
+  /* Reduced from 40 */
+  letter-spacing: -0.015em;
+  color: #1d1d1f;
 }
 
 h3 {
   font-weight: 600;
-  font-size: 28px;
-  line-height: 1.14286;
-  letter-spacing: .007em;
+  font-size: 19px;
+  /* Body display size */
+  letter-spacing: -0.01em;
+  color: #1d1d1f;
 }
 
 p {
-  font-size: 17px;
-  line-height: 1.47059;
-  letter-spacing: -0.022em;
-  color: var(--apple-text-gray);
+  font-size: 15px;
+  /* Reduced from 17 */
+  line-height: 1.5;
+  color: var(--apple-text-secondary);
 }
 
-/* Apple Buttons */
+/* Controls */
+button {
+  font-family: inherit;
+}
+
 .btn-primary {
   background-color: var(--apple-blue);
   color: white;
-  border-radius: 980px;
-  /* Fully rounded */
-  padding: 8px 16px;
-  font-size: 12px;
-  font-weight: 400;
-  /* Regular weight like nav buttons */
-  letter-spacing: -0.01em;
-  transition: all 0.3s var(--ease-apple);
-  border: none;
+  border-radius: 999px;
+  padding: 6px 14px;
+  /* Tighter padding */
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
-.btn-primary:hover {
-  background-color: var(--apple-blue-hover);
-  transform: scale(1.02);
+.btn-primary:active {
+  transform: scale(0.96);
 }
 
-.btn-secondary {
-  background-color: white;
-  color: var(--apple-blue);
-  border-radius: 980px;
-  padding: 8px 16px;
-  font-size: 12px;
-  font-weight: 400;
-  border: 1px solid var(--apple-border);
-  transition: all 0.3s var(--ease-apple);
-}
-
-.btn-secondary:hover {
-  border-color: var(--apple-blue);
-  background-color: #f5f5f7;
-}
-
-/* Cards - Bento Grid Style */
+/* Bento Cards */
 .card {
   background: var(--apple-card);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-apple-sm);
-  transition: transform 0.4s var(--ease-apple), box-shadow 0.4s var(--ease-apple);
-  overflow: hidden;
+  box-shadow: var(--shadow-apple-card);
+  transition: transform 0.3s var(--ease-spring), box-shadow 0.3s ease;
+  will-change: transform;
 }
 
 .card:hover {
-  transform: scale(1.02);
-  box-shadow: var(--shadow-apple-md);
+  transform: translateY(-4px);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.09), 0 4px 8px rgba(0, 0, 0, 0.03);
 }
 
-/* Inputs - Clean & Minimal */
+/* Inputs */
 input,
 textarea {
-  background: white;
-  border: 1px solid #d2d2d7;
-  border-radius: 12px;
-  padding: 12px 16px;
-  font-size: 17px;
+  background: rgba(0, 0, 0, 0.03);
+  /* Light gray fill */
+  border: 1px solid transparent;
+  /* No border by default */
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 15px;
   color: var(--apple-text);
-  transition: border-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 input:focus,
 textarea:focus {
-  outline: none;
+  background: #fff;
   border-color: var(--apple-blue);
-  box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.1);
-}
-
-/* Glassmorphism Classes */
-.glass-panel {
-  background-color: var(--apple-glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--apple-glass-border);
-}
-
-/* Scrollbar - Hidden or minimal */
-::-webkit-scrollbar {
-  width: 0px;
-  background: transparent;
+  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15);
+  outline: none;
 }
 
 /* Selection */
 ::selection {
-  background: #B3D7FF;
-  /* Light Apple Blue */
-  color: #000;
+  background: rgba(0, 113, 227, 0.2);
+  color: #1d1d1f;
 }
 
-/* Animations */
-@keyframes apple-bounce {
-  0% {
-    transform: scale(0.9);
-    opacity: 0;
-  }
-
-  60% {
-    transform: scale(1.02);
-    opacity: 1;
-  }
-
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.animate-in-pop {
-  animation: apple-bounce 0.5s var(--ease-apple) forwards;
-}
-
-/* Reader Specific */
+/* Reader Typography */
 .reader-content {
-  font-family: "Charter", "Bitstream Charter", "Sitka Text", Cambria, serif;
-  /* Clean serif for reading */
-  font-size: 20px;
+  font-family: "Charter", "Iowan Old Style", "Sitka Text", serif;
+  font-size: 18px;
+  /* Reduced from 20 */
   line-height: 1.6;
-  color: #1a1a1a;
+  color: #1d1d1f;
+  max-width: 62ch;
+  /* Optimal reading width */
 }

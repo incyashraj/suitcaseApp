@@ -320,11 +320,10 @@ export default function App() {
     return (
       <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#F5F5F7] animate-in fade-in duration-500">
         <div className="relative">
-          <div className="absolute inset-0 bg-blue-500/10 rounded-full blur-xl animate-pulse"></div>
-          <BookOpen size={64} className="relative text-[#0066CC] mb-6 animate-bounce" />
+          <BookOpen size={48} className="relative text-[#0071e3] mb-4 animate-bounce" />
         </div>
-        <h2 className="text-2xl font-bold text-[#1d1d1f] mb-2 tracking-tight">Curating your library...</h2>
-        <p className="text-[#86868b] text-lg">Finding books that match your taste.</p>
+        <h2 className="text-xl font-semibold text-[#1d1d1f] mb-1 tracking-tight">Curating your library...</h2>
+        <p className="text-[#86868b] text-sm">Matching books to you.</p>
       </div>
     );
   }
@@ -337,32 +336,32 @@ export default function App() {
       onDrop={handleDrop}
     >
 
-      {/* Drag Overlay */}
+      {/* Drag Overlay - Smaller & cleaner */}
       {isDragging && (
-        <div className="fixed inset-0 z-[100] bg-white/60 backdrop-blur-md border-4 border-[#0066CC] border-dashed m-4 rounded-[32px] flex items-center justify-center pointer-events-none animate-in fade-in duration-200">
-          <div className="bg-white p-12 rounded-[24px] shadow-2xl flex flex-col items-center border border-gray-100">
-            <Upload size={48} className="text-[#0066CC] mb-6 animate-bounce" />
-            <h2 className="text-3xl font-bold text-[#1d1d1f] tracking-tight">Drop PDF to Upload</h2>
+        <div className="fixed inset-0 z-[100] bg-white/80 backdrop-blur-xl border-4 border-[#0071e3] border-dashed m-6 rounded-[24px] flex items-center justify-center pointer-events-none animate-in fade-in duration-200">
+          <div className="bg-white px-8 py-6 rounded-[18px] shadow-2xl flex flex-col items-center border border-black/5">
+            <Upload size={32} className="text-[#0071e3] mb-3 animate-bounce" />
+            <h2 className="text-xl font-semibold text-[#1d1d1f] tracking-tight">Drop PDF</h2>
           </div>
         </div>
       )}
 
-      {/* Top Bar - Sticky Frosted Glass */}
-      <div className="fixed top-0 left-0 right-0 z-30 px-6 py-4 flex justify-between items-center pointer-events-none">
-        <div className="flex items-center gap-3">
-          <Briefcase size={22} className="text-[#1d1d1f]" />
-          <span className="font-bold text-xl tracking-tight text-[#1d1d1f] hidden sm:block">Suitcase</span>
+      {/* Top Bar - Smaller, tighter */}
+      <div className="fixed top-0 left-0 right-0 z-30 px-6 py-3 flex justify-between items-center pointer-events-none">
+        <div className="flex items-center gap-2">
+          <Briefcase size={18} className="text-[#1d1d1f]" />
+          <span className="font-semibold text-sm tracking-tight text-[#1d1d1f] hidden sm:block">Suitcase</span>
         </div>
 
         <div className="pointer-events-auto flex items-center gap-3">
           <div
             onClick={() => { setActiveMode('library'); setView('profile'); }}
-            className="bg-white/70 backdrop-blur-xl px-4 py-2 rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-white/50 flex items-center gap-2 hover:scale-105 transition-transform cursor-pointer"
+            className="bg-white/80 backdrop-blur-xl px-3 py-1.5 rounded-full shadow-sm border border-black/5 flex items-center gap-2 hover:scale-105 transition-transform cursor-pointer"
           >
-            <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#FFD60A] to-[#FF9F0A] flex items-center justify-center shadow-sm">
-              <span className="text-[10px] font-bold text-white">$</span>
+            <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-[#FFD60A] to-[#FF9F0A] flex items-center justify-center shadow-sm">
+              <span className="text-[9px] font-bold text-white">$</span>
             </div>
-            <span className="text-sm font-medium text-[#1d1d1f]">{wallet.balance}</span>
+            <span className="text-xs font-medium text-[#1d1d1f]">{wallet.balance}</span>
           </div>
         </div>
       </div>
@@ -577,15 +576,15 @@ export default function App() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-10">
-                  {/* Upload Button as First Item */}
+                  {/* Upload Button as First Item - Smaller */}
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="aspect-[2/3] rounded-2xl bg-[#eee8d5] border-2 border-dashed border-[#93a1a1] hover:border-[#2aa198] hover:bg-[#2aa19810] transition-all group flex flex-col items-center justify-center gap-3"
+                    className="aspect-[2/3] rounded-xl bg-[#E5E5EA] border border-dashed border-[#d2d2d7] hover:border-[#0071e3] hover:bg-[#0071e3]/5 transition-all group flex flex-col items-center justify-center gap-2"
                   >
-                    <div className="w-12 h-12 bg-[#fdf6e3] rounded-full shadow-sm flex items-center justify-center text-[#657b83] group-hover:text-[#2aa198] transition-colors">
-                      <Plus size={24} />
+                    <div className="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-[#86868b] group-hover:text-[#0071e3] transition-colors">
+                      <Plus size={20} />
                     </div>
-                    <span className="text-xs font-bold text-[#657b83] group-hover:text-[#2aa198] uppercase tracking-wide">Add Book</span>
+                    <span className="text-[11px] font-semibold text-[#86868b] group-hover:text-[#0071e3] uppercase tracking-wide">Add Book</span>
                   </button>
 
                   {myLibrary.map((book) => (
@@ -599,10 +598,10 @@ export default function App() {
 
       </main>
 
-      {/* Floating Glass Dock - iOS Style */}
+      {/* Floating Glass Dock - iOS Style (Compact) */}
       {view !== 'reader' && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 animate-in slide-in-from-bottom-24 duration-1000 ease-out">
-          <div className="flex items-center gap-2 p-2 px-4 rounded-[24px] shadow-[0_12px_40px_rgba(0,0,0,0.12)] bg-white/70 backdrop-blur-xl border border-white/40 ring-1 ring-black/5">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 animate-in slide-in-from-bottom-12 duration-1000 ease-out">
+          <div className="flex items-center gap-1 p-1.5 px-3 rounded-[20px] shadow-[0_12px_32px_rgba(0,0,0,0.08)] bg-white/80 backdrop-blur-xl border border-white/40 ring-1 ring-black/5 scale-90 origin-bottom">
             <DockItem icon={Home} label="Library" isActive={view === 'library' && activeMode === 'library'} onClick={() => { setView('library'); setActiveMode('library'); }} />
             <DockItem icon={Sparkles} label="Concierge" isActive={view === 'library' && activeMode === 'mood'} onClick={() => { setView('library'); setActiveMode('mood'); }} />
             <DockItem icon={Search} label="Search" isActive={view === 'library' && activeMode === 'search'} onClick={() => { setView('library'); setActiveMode('search'); }} />

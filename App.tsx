@@ -45,6 +45,11 @@ export default function App() {
 
   // 1. Firebase Session Listener
   useEffect(() => {
+    console.log("🔍 DEBUG ENV:", {
+      GROQ_EXISTS: !!import.meta.env.VITE_GROQ_API_KEY,
+      GEMINI_EXISTS: !!import.meta.env.VITE_GEMINI_API_KEY,
+      MODE: import.meta.env.MODE
+    });
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         const appUser = mapFirebaseUser(firebaseUser);

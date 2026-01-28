@@ -3,7 +3,7 @@ import { Book, Review, UserPreferences } from "../types";
 import * as Fallback from "./fallbackService";
 
 // Initialize Gemini Client
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
 const modelName = 'gemini-3-flash-preview';
 
 // Helper to safely parse JSON from AI response if the SDK doesn't return an object directly
@@ -28,7 +28,7 @@ const parseJSON = (text: string | undefined) => {
  * Acts as an interface to a "Global Library" by hallucinating accurate metadata for real books.
  */
 export const searchBooks = async (query: string): Promise<Book[]> => {
-  if (!process.env.API_KEY) {
+  if (!import.meta.env.VITE_GEMINI_API_KEY) {
     console.warn("Gemini API Key missing, using fallback.");
     return Fallback.searchBooks(query);
   }
@@ -105,7 +105,7 @@ export const searchBooks = async (query: string): Promise<Book[]> => {
  * Handles back-and-forth dialogue to recommend books.
  */
 export const consultConcierge = async (userMessage: string, history: {role: 'user'|'model', text: string}[]): Promise<{ reply: string, suggestions: Book[] }> => {
-    if (!process.env.API_KEY) return Fallback.consultConcierge(userMessage, history);
+    if (!import.meta.env.VITE_GEMINI_API_KEY) return Fallback.consultConcierge(userMessage, history);
 
     try {
         const bookSchema: Schema = {
@@ -200,7 +200,7 @@ export const getMoodRecommendations = async (mood: string): Promise<Book[]> => {
  * Generates recommendations based on onboarding preferences.
  */
 export const getOnboardingRecommendations = async (prefs: UserPreferences): Promise<Book[]> => {
-    if (!process.env.API_KEY) return Fallback.getOnboardingRecommendations(prefs);
+    if (!import.meta.env.VITE_GEMINI_API_KEY) return Fallback.getOnboardingRecommendations(prefs);
   
     try {
       const bookSchema: Schema = {
@@ -267,7 +267,7 @@ export const getOnboardingRecommendations = async (prefs: UserPreferences): Prom
  * Generates mock reviews to simulate Goodreads integration.
  */
 export const generateReviews = async (title: string, author: string): Promise<Review[]> => {
-  if (!process.env.API_KEY) return Fallback.generateReviews(title, author);
+  if (!import.meta.env.VITE_GEMINI_API_KEY) return Fallback.generateReviews(title, author);
 
   try {
     const reviewSchema: Schema = {
@@ -324,7 +324,7 @@ export const generateReviews = async (title: string, author: string): Promise<Re
  * Chat about a book
  */
 export const chatAboutBook = async (bookTitle: string, userMessage: string, chatHistory: any[]): Promise<string> => {
-     if (!process.env.API_KEY) return Fallback.chatAboutBook(bookTitle, userMessage, chatHistory);
+     if (!import.meta.env.VITE_GEMINI_API_KEY) return Fallback.chatAboutBook(bookTitle, userMessage, chatHistory);
      try {
         const prompt = `
             You are an expert literary scholar and reading companion.
@@ -351,7 +351,7 @@ export const chatAboutBook = async (bookTitle: string, userMessage: string, chat
  * Reader Tool: Translate
  */
 export const translateText = async (text: string, targetLang: string = "English"): Promise<string> => {
-    if (!process.env.API_KEY) return Fallback.translateText(text);
+    if (!import.meta.env.VITE_GEMINI_API_KEY) return Fallback.translateText(text);
     try {
         const prompt = `Translate the following literary text to ${targetLang}. Preserve the tone and style: "${text}"`;
         const response = await ai.models.generateContent({ model: modelName, contents: prompt });
@@ -365,7 +365,7 @@ export const translateText = async (text: string, targetLang: string = "English"
  * Reader Tool: Explain Context
  */
 export const explainContext = async (text: string, bookTitle: string): Promise<string> => {
-    if (!process.env.API_KEY) return Fallback.explainContext(text, bookTitle);
+    if (!import.meta.env.VITE_GEMINI_API_KEY) return Fallback.explainContext(text, bookTitle);
     try {
         const prompt = `The user is reading "${bookTitle}" and highlighted this text: "${text}".
         Explain this excerpt in simple terms. Provide necessary context, historical background, or define archaic words.`;
@@ -381,7 +381,7 @@ export const explainContext = async (text: string, bookTitle: string): Promise<s
  * Generates specific chapters to allow reading the 'complete' book in segments.
  */
 export const generateBookContent = async (title: string, author: string, chapter: number = 1): Promise<string> => {
-    if (!process.env.API_KEY) return Fallback.generateBookContent(title, author, chapter);
+    if (!import.meta.env.VITE_GEMINI_API_KEY) return Fallback.generateBookContent(title, author, chapter);
     try {
         const prompt = `
           The user wants to read **Chapter ${chapter}** of the book "${title}" by ${author}.
@@ -411,7 +411,7 @@ export const generateBookContent = async (title: string, author: string, chapter
  * Reader Tool: Summary
  */
 export const getBookSummary = async (title: string): Promise<string> => {
-    if (!process.env.API_KEY) return Fallback.getBookSummary(title);
+    if (!import.meta.env.VITE_GEMINI_API_KEY) return Fallback.getBookSummary(title);
     try {
         const prompt = `Provide a comprehensive summary of the book "${title}". Cover the main plot points, themes, and character arcs.`;
         const response = await ai.models.generateContent({ model: modelName, contents: prompt });
@@ -425,7 +425,7 @@ export const getBookSummary = async (title: string): Promise<string> => {
  * Reader Tool: Recap
  */
 export const getBookRecap = async (title: string): Promise<string> => {
-    if (!process.env.API_KEY) return Fallback.getBookRecap(title);
+    if (!import.meta.env.VITE_GEMINI_API_KEY) return Fallback.getBookRecap(title);
     try {
         const prompt = `The user is reading "${title}" and has forgotten what happened previously. Provide a quick recap of the beginning/setup of the book to jog their memory.`;
         const response = await ai.models.generateContent({ model: modelName, contents: prompt });

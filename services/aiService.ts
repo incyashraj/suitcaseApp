@@ -2,7 +2,7 @@ import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { Book, Review, UserPreferences } from "../types";
 
 // Initialize Gemini Client
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
 
 const modelName = 'gemini-3-flash-preview';
 
@@ -27,7 +27,7 @@ const parseJSON = (text: string | undefined) => {
  * Simulates searching a massive online library.
  */
 export const searchBooks = async (query: string): Promise<Book[]> => {
-  if (!process.env.API_KEY) {
+  if (!import.meta.env.VITE_GEMINI_API_KEY) {
     console.error("API Key missing");
     return [];
   }
@@ -95,7 +95,7 @@ export const searchBooks = async (query: string): Promise<Book[]> => {
  * Suggests books based on user mood.
  */
 export const getMoodRecommendations = async (mood: string): Promise<Book[]> => {
-  if (!process.env.API_KEY) return [];
+  if (!import.meta.env.VITE_GEMINI_API_KEY) return [];
 
   try {
     const bookSchema: Schema = {
@@ -162,7 +162,7 @@ export const getMoodRecommendations = async (mood: string): Promise<Book[]> => {
  * Generates recommendations based on onboarding preferences
  */
 export const getOnboardingRecommendations = async (prefs: UserPreferences): Promise<Book[]> => {
-    if (!process.env.API_KEY) return [];
+    if (!import.meta.env.VITE_GEMINI_API_KEY) return [];
   
     try {
       const bookSchema: Schema = {
@@ -225,7 +225,7 @@ export const getOnboardingRecommendations = async (prefs: UserPreferences): Prom
  * Generates mock reviews.
  */
 export const generateReviews = async (title: string, author: string): Promise<Review[]> => {
-  if (!process.env.API_KEY) return [];
+  if (!import.meta.env.VITE_GEMINI_API_KEY) return [];
 
   try {
     const reviewSchema: Schema = {
@@ -280,7 +280,7 @@ export const generateReviews = async (title: string, author: string): Promise<Re
  * Chat about a book
  */
 export const chatAboutBook = async (bookTitle: string, userMessage: string, chatHistory: any[]): Promise<string> => {
-     if (!process.env.API_KEY) return "API Key missing.";
+     if (!import.meta.env.VITE_GEMINI_API_KEY) return "API Key missing.";
      const prompt = `
         You are a helpful literary assistant.
         Context: User is reading "${bookTitle}".
@@ -300,7 +300,7 @@ export const chatAboutBook = async (bookTitle: string, userMessage: string, chat
  * Reader Tool: Translate
  */
 export const translateText = async (text: string, targetLang: string = "English"): Promise<string> => {
-    if (!process.env.API_KEY) return "API Key missing";
+    if (!import.meta.env.VITE_GEMINI_API_KEY) return "API Key missing";
     const prompt = `Translate the following text to ${targetLang}: "${text}"`;
     const response = await ai.models.generateContent({ model: modelName, contents: prompt });
     return response.text || "Translation failed.";
@@ -310,7 +310,7 @@ export const translateText = async (text: string, targetLang: string = "English"
  * Reader Tool: Explain Context
  */
 export const explainContext = async (text: string, bookTitle: string): Promise<string> => {
-    if (!process.env.API_KEY) return "API Key missing";
+    if (!import.meta.env.VITE_GEMINI_API_KEY) return "API Key missing";
     const prompt = `Explain this excerpt from "${bookTitle}" in simple terms, providing necessary context: "${text}"`;
     const response = await ai.models.generateContent({ model: modelName, contents: prompt });
     return response.text || "Could not explain context.";
@@ -321,7 +321,7 @@ export const explainContext = async (text: string, bookTitle: string): Promise<s
  * This is used when the user "reads" a book from the online search that has no actual file.
  */
 export const generateBookContent = async (title: string): Promise<string> => {
-    if (!process.env.API_KEY) return "Loading content...";
+    if (!import.meta.env.VITE_GEMINI_API_KEY) return "Loading content...";
     const prompt = `Write the first 600 words of the book "${title}". Format it with HTML paragraphs <p>. Do not include markdown code blocks.`;
     const response = await ai.models.generateContent({ model: modelName, contents: prompt });
     return response.text?.replace(/```html|```/g, '') || "<p>Content unavailable.</p>";
@@ -331,7 +331,7 @@ export const generateBookContent = async (title: string): Promise<string> => {
  * Reader Tool: Summary
  */
 export const getBookSummary = async (title: string): Promise<string> => {
-    if (!process.env.API_KEY) return "API Key missing";
+    if (!import.meta.env.VITE_GEMINI_API_KEY) return "API Key missing";
     const prompt = `Provide a concise summary of the book "${title}".`;
     const response = await ai.models.generateContent({ model: modelName, contents: prompt });
     return response.text || "Summary unavailable.";
@@ -341,7 +341,7 @@ export const getBookSummary = async (title: string): Promise<string> => {
  * Reader Tool: Recap
  */
 export const getBookRecap = async (title: string): Promise<string> => {
-    if (!process.env.API_KEY) return "API Key missing";
+    if (!import.meta.env.VITE_GEMINI_API_KEY) return "API Key missing";
     const prompt = `The user is reading "${title}" and has forgotten what happened previously. Provide a quick recap of the first few chapters to jog their memory without spoiling the ending.`;
     const response = await ai.models.generateContent({ model: modelName, contents: prompt });
     return response.text || "Recap unavailable.";
